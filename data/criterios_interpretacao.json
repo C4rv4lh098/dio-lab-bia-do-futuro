@@ -1,0 +1,89 @@
+{
+  "cp": {
+    "menor_1": {
+      "classificacao": "Processo potencialmente incapaz",
+      "descricao": "A variabilidade estimada do processo é maior que a faixa de especificação.",
+      "nivel": "Crítico"
+    },
+    "entre_1_e_1_33": {
+      "classificacao": "Capacidade potencial limitada",
+      "descricao": "O processo possui pouca margem em relação aos limites de especificação.",
+      "nivel": "Atenção"
+    },
+    "maior_1_33": {
+      "classificacao": "Processo potencialmente capaz",
+      "descricao": "A variabilidade estimada do processo é compatível com os limites de especificação.",
+      "nivel": "Adequado"
+    }
+  },
+
+  "cpk": {
+    "menor_0": {
+      "classificacao": "Média fora da especificação",
+      "descricao": "A média do processo está localizada fora de pelo menos um dos limites de especificação.",
+      "nivel": "Crítico"
+    },
+    "entre_0_e_1": {
+      "classificacao": "Processo potencialmente incapaz",
+      "descricao": "Existe elevada probabilidade de produzir itens fora da especificação.",
+      "nivel": "Crítico"
+    },
+    "entre_1_e_1_33": {
+      "classificacao": "Capacidade limitada",
+      "descricao": "O processo atende parcialmente às especificações, porém apresenta baixa margem de segurança.",
+      "nivel": "Atenção"
+    },
+    "entre_1_33_e_1_67": {
+      "classificacao": "Processo potencialmente capaz",
+      "descricao": "O processo apresenta boa capacidade considerando os limites informados.",
+      "nivel": "Adequado"
+    },
+    "maior_1_67": {
+      "classificacao": "Excelente capacidade",
+      "descricao": "O processo apresenta elevada capacidade e ampla margem em relação às especificações.",
+      "nivel": "Excelente"
+    }
+  },
+
+  "centralizacao": {
+    "cp_maior_cpk": {
+      "descricao": "Quando Cp é significativamente maior que Cpk, o processo pode estar descentrado em relação aos limites de especificação."
+    },
+    "cp_proximo_cpk": {
+      "descricao": "Quando Cp e Cpk apresentam valores semelhantes, o processo tende a estar mais centralizado."
+    }
+  },
+
+  "qualidade_dados": {
+    "dados_insuficientes": {
+      "mensagem": "A quantidade de medições é insuficiente para uma análise confiável."
+    },
+    "valores_ausentes": {
+      "mensagem": "Foram encontrados valores ausentes. Recomenda-se revisar os dados antes da interpretação."
+    },
+    "duplicados": {
+      "mensagem": "Existem registros duplicados que podem influenciar os resultados."
+    },
+    "outliers": {
+      "mensagem": "Foram identificados possíveis valores discrepantes. Eles devem ser investigados antes de qualquer exclusão."
+    }
+  },
+
+  "limitacoes": {
+    "normalidade": {
+      "mensagem": "Os índices tradicionais de capabilidade assumem, em muitos casos, uma distribuição aproximadamente normal."
+    },
+    "estabilidade": {
+      "mensagem": "O Cp e o Cpk não comprovam que o processo está estatisticamente sob controle."
+    },
+    "msa": {
+      "mensagem": "Problemas no sistema de medição podem influenciar diretamente os resultados da análise."
+    }
+  },
+
+  "respostas": {
+    "sem_lie_lse": "Não é possível interpretar a capabilidade sem os limites de especificação.",
+    "sem_dados": "Não há dados suficientes para realizar a análise.",
+    "fora_escopo": "Posso responder apenas perguntas relacionadas ao tratamento de dados e à análise de capabilidade de processos."
+  }
+}
