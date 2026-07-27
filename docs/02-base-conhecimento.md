@@ -1,20 +1,80 @@
 # Base de Conhecimento
 
-> [!TIP]
-> **Prompt usado para esta etapa:**
-> 
-> Organize a base de conhecimento do agente "Edu" usando os 4 arquivos da pasta `data/` (em anexo). Explique pra que serve cada arquivo e monte um exemplo de contexto formatado que será enviado pro LLM. Preencha o template abaixo.
->
-> [cole ou anexe o template `02-base-conhecimento.md` pra contexto]
-
 ## Dados Utilizados
 
-| Arquivo | Formato | Para que serve no Edu? |
-|---------|---------|---------------------|
-| `historico_atendimento.csv` | CSV | Contextualizar interações anteriores, ou seja, dar continuidade ao atendimento de forma mais eficiente. |
-| `perfil_investidor.json` | JSON | Personalizar as explicações sobre as dúvidas e necessidades de aprendizado do cliente. |
-| `produtos_financeiros.json` | JSON | Conhecer os produtos disponíveis para que eles possam ser ensinados ao cliente. |
-| `transacoes.csv` | CSV | Analisar padrão de gastos do cliente e usar essas informações de forma didática. |
+A Base de Conhecimento será composta por arquivos locais contendo conceitos, regras e critérios relacionados à análise de capabilidade de processos industriais.
+
+| Arquivo | Formato | Utilização no Agente |
+|---------|---------|----------------------|
+| `conceitos_capabilidade.md` | Markdown | Conceitos sobre Cp, Cpk, Pp e Ppk |
+| `criterios_interpretacao.json` | JSON | Regras para classificação dos indicadores |
+| `formulas.md` | Markdown | Fórmulas estatísticas utilizadas na análise |
+| `limitacoes.md` | Markdown | Limitações, cuidados e boas práticas |
+| `exemplos_respostas.md` | Markdown | Exemplos de interpretações geradas pelo agente |
+
+---
+
+## Organização da Base
+
+A estrutura da Base de Conhecimento está organizada da seguinte forma:
+
+```text
+data/
+├── conceitos_capabilidade.md
+├── criterios_interpretacao.json
+├── formulas.md
+├── limitacoes.md
+└── exemplos_respostas.md
+```
+
+Cada arquivo possui uma responsabilidade específica, permitindo que o modelo de linguagem consulte apenas as informações necessárias para interpretar os resultados produzidos pelo sistema.
+
+---
+
+## Como a Base é Utilizada
+
+Durante a execução do agente, o fluxo será o seguinte:
+
+1. O usuário envia um arquivo CSV contendo as medições do processo.
+2. O Python realiza o tratamento dos dados e os cálculos estatísticos.
+3. Os resultados calculados são organizados em um formato estruturado.
+4. O LLM consulta a Base de Conhecimento para obter conceitos e critérios de interpretação.
+5. O agente gera uma explicação técnica baseada nos resultados e nas informações da Base de Conhecimento.
+
+A Base de Conhecimento **não realiza cálculos** e **não altera os dados enviados pelo usuário**. Sua função é fornecer contexto ao modelo de linguagem, garantindo respostas mais consistentes e reduzindo o risco de alucinações.
+
+---
+
+## Exemplo de Conteúdo
+
+### `criterios_interpretacao.json`
+
+```json
+{
+  "cpk_menor_1": {
+    "classificacao": "Processo potencialmente incapaz",
+    "descricao": "O processo apresenta risco de produzir itens fora dos limites de especificação."
+  },
+  "cpk_entre_1_e_1_33": {
+    "classificacao": "Capacidade limitada",
+    "descricao": "O processo atende parcialmente aos requisitos, sendo recomendada a redução da variabilidade."
+  },
+  "cpk_maior_1_33": {
+    "classificacao": "Processo potencialmente capaz",
+    "descricao": "O processo apresenta capacidade adequada em relação aos limites de especificação."
+  }
+}
+```
+
+---
+
+## Benefícios da Base de Conhecimento
+
+- Padroniza as interpretações dos resultados.
+- Reduz respostas inconsistentes do modelo de linguagem.
+- Centraliza conceitos e regras de negócio em arquivos de fácil manutenção.
+- Permite atualizar critérios de interpretação sem alterar o código da aplicação.
+- Facilita a expansão do agente para novas funcionalidades no futuro.
 
 ---
 
@@ -22,151 +82,109 @@
 
 > Você modificou ou expandiu os dados mockados? Descreva aqui.
 
-O produto Fundo Imobiliário (FII) substituiu o Fundo Multimercado, pois pessoalmente me sinto mais confiante em usar apenas produtos financeiros que eu conheço. Assim, poderei validar as respostas do Edu de forma mais assertiva.
+O tema inicialmente proposto para o agente foi alterado. Em vez de um agente voltado para educação financeira, optou-se pelo desenvolvimento de um agente especializado em **tratamento de dados e análise de capabilidade de processos industriais**.
+Em função dessa mudança, foi necessário substituir os arquivos disponibilizados no projeto base do curso por novos arquivos relacionados ao domínio da qualidade e da estatística aplicada.
+Dessa forma, a Base de Conhecimento passou a atender especificamente às necessidades do novo domínio da aplicação, mantendo a mesma arquitetura proposta no curso, porém com conteúdo adaptado ao contexto industrial.
 
 ---
 
 ## Estratégia de Integração
 
 ### Como os dados são carregados?
-> Descreva como seu agente acessa a base de conhecimento.
 
-Existem duas possibilidades, injetar os dados diretamente no prompt (Ctrl + C, Ctrl + V) ou carregar os arquivos via código, como no exemplo abaixo:
+A Base de Conhecimento é composta por arquivos locais armazenados na pasta `data`. Esses arquivos são carregados pela aplicação em Python durante a inicialização do agente e utilizados para fornecer contexto ao modelo de linguagem.
+
+Além da Base de Conhecimento, o agente recebe como entrada um arquivo CSV contendo as medições do processo industrial. Esse arquivo é enviado pelo usuário através da interface desenvolvida em Streamlit e processado durante a execução da análise.
+
+Exemplo de carregamento dos arquivos:
+
+```python
+from pathlib import Path
+import json
+
+# Base de conhecimento
+conceitos = Path("data/conceitos_capabilidade.md").read_text(encoding="utf-8")
+limitacoes = Path("data/limitacoes.md").read_text(encoding="utf-8")
+exemplos = Path("data/exemplos_respostas.md").read_text(encoding="utf-8")
+
+with open("data/criterios_interpretacao.json", encoding="utf-8") as arquivo:
+    criterios = json.load(arquivo)
+```
+
+Os dados enviados pelo usuário (CSV) são carregados utilizando a biblioteca Pandas.
 
 ```python
 import pandas as pd
-import json
 
-perfil = json.load(open('./data/perfil_investidor.json'))
-transacoes = pd.read_csv('./data/transacoes.csv')
-historico = pd.read_csv('./data/historico_atendimento.csv')
-produtos = json.load(open('./data/produtos_financeiros.json'))
+dados = pd.read_csv("medicoes.csv")
 ```
 
-### Como os dados são usados no prompt?
-> Os dados vão no system prompt? São consultados dinamicamente?
+---
 
-Para simplificar, podemos simplesmente "injetar" os dados em nosso prompt, agarntindo que o Agente tenha o melhor contexto possível. Lembrando que, em soluções mais robustas, o ideal é que essas informaçoes sejam carregadas dinamicamente para que possamos ganhar flexibilidade.
+### Como os dados são usados no prompt?
+
+Os cálculos estatísticos são realizados exclusivamente em Python.
+
+Após a validação e processamento dos dados, os principais resultados (como média, desvio-padrão, Cp e Cpk) são organizados em um contexto estruturado e enviados ao LLM juntamente com a Base de Conhecimento.
+
+Dessa forma, o modelo de linguagem recebe apenas as informações necessárias para interpretar os resultados, sem realizar cálculos estatísticos.
+
+> Exemplo de contexto enviado ao modelo:
 
 ```text
-DADOS DO CLIENTE E PERFIL (data/perfil_investidor.json):
-{
-  "nome": "João Silva",
-  "idade": 32,
-  "profissao": "Analista de Sistemas",
-  "renda_mensal": 5000.00,
-  "perfil_investidor": "moderado",
-  "objetivo_principal": "Construir reserva de emergência",
-  "patrimonio_total": 15000.00,
-  "reserva_emergencia_atual": 10000.00,
-  "aceita_risco": false,
-  "metas": [
-    {
-      "meta": "Completar reserva de emergência",
-      "valor_necessario": 15000.00,
-      "prazo": "2026-06"
-    },
-    {
-      "meta": "Entrada do apartamento",
-      "valor_necessario": 50000.00,
-      "prazo": "2027-12"
-    }
-  ]
-}
+Base de Conhecimento
 
-TRANSACOES DO CLIENTE (data/transacoes.csv):
-data,descricao,categoria,valor,tipo
-2025-10-01,Salário,receita,5000.00,entrada
-2025-10-02,Aluguel,moradia,1200.00,saida
-2025-10-03,Supermercado,alimentacao,450.00,saida
-2025-10-05,Netflix,lazer,55.90,saida
-2025-10-07,Farmácia,saude,89.00,saida
-2025-10-10,Restaurante,alimentacao,120.00,saida
-2025-10-12,Uber,transporte,45.00,saida
-2025-10-15,Conta de Luz,moradia,180.00,saida
-2025-10-20,Academia,saude,99.00,saida
-2025-10-25,Combustível,transporte,250.00,saida
+- Conceitos sobre Cp e Cpk
+- Critérios de interpretação
+- Limitações da análise
+- Exemplos de respostas
 
-HISTORICO DE ATENDIMENTO DO CLIENTE (data/historico_atendimento.csv):
-data,canal,tema,resumo,resolvido
-2025-09-15,chat,CDB,Cliente perguntou sobre rentabilidade e prazos,sim
-2025-09-22,telefone,Problema no app,Erro ao visualizar extrato foi corrigido,sim
-2025-10-01,chat,Tesouro Selic,Cliente pediu explicação sobre o funcionamento do Tesouro Direto,sim
-2025-10-12,chat,Metas financeiras,Cliente acompanhou o progresso da reserva de emergência,sim
-2025-10-25,email,Atualização cadastral,Cliente atualizou e-mail e telefone,sim
+Resultados Calculados
 
-PRODUTOS DISPONIVEIS PARA ENSINO (data/produtos_financeiros.json):
-[
-  {
-    "nome": "Tesouro Selic",
-    "categoria": "renda_fixa",
-    "risco": "baixo",
-    "rentabilidade": "100% da Selic",
-    "aporte_minimo": 30.00,
-    "indicado_para": "Reserva de emergência e iniciantes"
-  },
-  {
-    "nome": "CDB Liquidez Diária",
-    "categoria": "renda_fixa",
-    "risco": "baixo",
-    "rentabilidade": "102% do CDI",
-    "aporte_minimo": 100.00,
-    "indicado_para": "Quem busca segurança com rendimento diário"
-  },
-  {
-    "nome": "LCI/LCA",
-    "categoria": "renda_fixa",
-    "risco": "baixo",
-    "rentabilidade": "95% do CDI",
-    "aporte_minimo": 1000.00,
-    "indicado_para": "Quem pode esperar 90 dias (isento de IR)"
-  },
-  {
-    "nome": "Fundo Imobiliário (FII)",
-    "categoria": "fundo",
-    "risco": "medio",
-    "rentabilidade": "Dividend Yield (DY) costuma ficar entre 6% a 12% ao ano",
-    "aporte_minimo": 100.00,
-    "indicado_para": "Perfil moderado que busca diversificação e renda recorrente mensal"
-  },
-  {
-    "nome": "Fundo de Ações",
-    "categoria": "fundo",
-    "risco": "alto",
-    "rentabilidade": "Variável",
-    "aporte_minimo": 100.00,
-    "indicado_para": "Perfil arrojado com foco no longo prazo"
-  }
-]
+Quantidade de medições: 250
+Média: 10.02 mm
+Desvio padrão: 0.05 mm
+LIE: 9.90 mm
+LSE: 10.10 mm
+
+Cp: 1.33
+Cpk: 1.28
+
+Objetivo:
+Interpretar os resultados de forma técnica, destacando a capacidade do processo, possíveis riscos e limitações da análise.
 ```
 
 ---
 
 ## Exemplo de Contexto Montado
 
-> Mostre um exemplo de como os dados são formatados para o agente.
+> O exemplo abaixo representa o contexto enviado ao LLM após o processamento dos dados pelo Python.
 
-O exemplo de contexto montado abaixo, se baiseia nos dados originais da base de conhecimento, mas os sintetiza deixando apenas as informações mais relevantes, otimizando assim o consumo de tokens. Entretanto, vale lembrar que mais importante do que economizar tokens, é ter todas as informações relevantes disponíveis em seu contexto.
+```text
+BASE DE CONHECIMENTO
 
-```
-DADOS DO CLIENTE:
-- Nome: João Silva
-- Perfil: Moderado
-- Objetivo: Construir reserva de emergência
-- Reserva atual: R$ 10.000 (meta: R$ 15.000)
+- O índice Cp mede a capacidade potencial do processo.
+- O índice Cpk considera a dispersão e o deslocamento da média.
+- Um Cpk maior ou igual a 1,33 indica, em geral, um processo potencialmente capaz.
+- O Cpk não deve ser utilizado isoladamente para afirmar que um processo está sob controle estatístico.
 
-RESUMO DE GASTOS:
-- Moradia: R$ 1.380
-- Alimentação: R$ 570
-- Transporte: R$ 295
-- Saúde: R$ 188
-- Lazer: R$ 55,90
-- Total de saídas: R$ 2.488,90
+RESULTADOS DA ANÁLISE
 
-PRODUTOS DISPONÍVEIS PARA EXPLICAR:
-- Tesouro Selic (risco baixo)
-- CDB Liquidez Diária (risco baixo)
-- LCI/LCA (risco baixo)
-- Fundo Imobiliário - FII (risco médio)
-- Fundo de Ações (risco alto)
+Quantidade de medições: 250
+
+Média: 10,02 mm
+
+Desvio padrão: 0,05 mm
+
+Limite Inferior (LIE): 9,90 mm
+
+Limite Superior (LSE): 10,10 mm
+
+Cp: 1,33
+
+Cpk: 1,28
+
+TAREFA DO AGENTE
+
+Interpretar os resultados apresentados, explicando o significado dos indicadores, os pontos de atenção encontrados e as limitações da análise. Não realize novos cálculos nem invente informações que não estejam presentes no contexto.
 ```
