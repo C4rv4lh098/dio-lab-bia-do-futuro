@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 
-DIRETORIO_BASE = Path(__file__).resolve().parent
+DIRETORIO_BASE = Path(__file__).resolve().parent.parent
 DIRETORIO_DADOS = DIRETORIO_BASE / "data"
 
 
